@@ -187,7 +187,6 @@ int main()
 		glUseProgram(0);
 
 		glfwSwapBuffers(mainWindow);
-		int a = 5;
 	}
 	return 0;
 }
