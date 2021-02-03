@@ -194,3 +194,5 @@ int main()
 // 2 Actual WIndow | Create and Terminate
 // 3 Buffer-size 
 // 4 Handel user input 
+// #######################################################
+//						MASTER
