@@ -4,38 +4,17 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#define ASSERT(x) if(!(x)) __debugbreak(); 
-#define glCall(x) GLClearError();\
-    x;\
-    ASSERT(GLLogCall(#x, __FILE__, __LINE__))
-
-void GLClearError()
-{
-	while (glGetError() != GL_NO_ERROR);
-}
-#include <iostream>
-bool GLLogCall(const char* function, const char* file, int line)
-{
-	while (GLenum error = glGetError())
-	{
-		std::cout << "[OpenGL Error: (" << error << "): " << function << " "
-			<< file << ":" << line << std::endl;
-		return false;
-	}
-	return true;
-}
-
-
+//OpenGL library identifies what card drive i am already using
 //Windows Dimension
 const unsigned int width = 800, height = 600;
 
-unsigned int VAO, VBO, shader; //VAO will holds  multiple vbo
+unsigned int VAO, VBO, shader; //VAO will holds  multiple VBOs
 
 //Vertex Shader
 static const char* vShader = "					  \n\
 #version 330 								      \n\
 												  \n\
-layout(location = 0) in vec3 pos;				  \n\
+layout (location = 0) in vec3 pos;				  \n\
 												  \n\
 void main()										  \n\
 {												  \n\
@@ -50,16 +29,16 @@ out vec4 colour;											  \n\
 															  \n\
 void main()													  \n\
 {															  \n\
-	colour = vec4(1.0f, 0.0f, 0.0f, 1.0); \n\
+	colour = vec4(1.0, 0.0, 0.0, 1.0); \n\
 }";
 
 void CreateTriangle()
 {
 	float vertices[]
 	{
-		0.0f, 1.0f, 0.0f,
-		-1.0, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f
+		-1.0f, -1.0f, 0.0f,
+		1.0f, -1.0f, 0.0f,
+		0.0f, 1.0f, 0.0f
 	};
 
 	glGenVertexArrays(1, &VAO);
@@ -67,17 +46,17 @@ void CreateTriangle()
 
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glCall(glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW));
+	glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW);
 
-	glCall(glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0));
-	glCall(glEnableVertexAttribArray(0));
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+	glEnableVertexAttribArray(0);
 
-	glCall(glBindBuffer(GL_ARRAY_BUFFER, 0)); // unbind VBO
+	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
 
-	glCall(glBindVertexArray(0)); //unbind VAO
+	glBindVertexArray(0); //unbind VAO
 
 }
-void AddShader(unsigned int program, const char* shaderCode, GLenum shaderType)
+void AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType)
 {
 	unsigned int theShader = glCreateShader(shaderType);
 
@@ -87,14 +66,28 @@ void AddShader(unsigned int program, const char* shaderCode, GLenum shaderType)
 	int codeLenght[1];
 	codeLenght[0] = strlen(shaderCode);
 
-	glShaderSourceCode(theShader, )
+	glShaderSource(theShader, 1, theCode, codeLenght);
+	glCompileShader(theShader);
+
+	int result = 0;
+	char eLog[1024] = { 0 };
+
+	glGetShaderiv(theShader, GL_COMPILE_STATUS, &result);
+	if (!result)
+	{
+		glGetShaderInfoLog(theShader, sizeof(eLog), NULL, eLog); //info for program pass into the eLog;
+		printf("Error compiling the %d shader:  '&s'\n", shaderType, eLog);
+		return;
+	}
+
+	glAttachShader(theProgram, theShader);
 }
-void CompileShader()
+void CompileShaders()
 {
 	shader = glCreateProgram();
 	if (!shader)
 	{
-		printf("Error creating shader program");
+		printf("Error creating shader program!\n");
 		return;
 	}
 
@@ -109,7 +102,7 @@ void CompileShader()
 	if (!result)
 	{
 		glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog); //info for program pass into the eLog;
-		printf("Error linking program:  '&s'\n", eLog);
+		printf("Error linking program: '&s'\n", eLog);
 		return;
 	}
 
@@ -117,21 +110,22 @@ void CompileShader()
 	glGetProgramiv(shader, GL_VALIDATE_STATUS, &result);
 	if (!result)
 	{
-		glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog); 
-		printf("Error validating program:  '&s'\n", eLog);
+		glGetProgramInfoLog(shader, sizeof(eLog), NULL, eLog);
+		printf("Error validating program: '&s'\n", eLog);
 		return;
 	}
 }
 
 int main()
 {
-	//Initialise GLFW
-	if(!glfwInit())
+	//Initialize GLFW
+	if (!glfwInit())
 	{
-		printf("GLFW Initialisation failed");
+		printf("GLFW Initialization failed");
 		glfwTerminate();
 		return 1;
 	}
+
 	// Setup GLFW window properties
 	// OpenGL version
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
@@ -160,16 +154,18 @@ int main()
 	//Allow modern extension features
 
 	glewExperimental = GL_TRUE;
+	GLenum error = glewInit();
 	if (!glfwInit())
 	{
-		printf("GLEW Initialisation failed");
+		printf("GLEW initialization failed");
 		glfwDestroyWindow(mainWindow);
 		glfwTerminate();
 		return 1;
 	}
-
 	//Setup Viewport size
 	glViewport(0, 0, bufferwidth, bufferheight);
+	CreateTriangle();
+	CompileShaders();
 
 	//Loop until window closed
 	while (!glfwWindowShouldClose(mainWindow))
@@ -179,16 +175,23 @@ int main()
 
 		//Clear Window
 
-		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-	
+
+		glUseProgram(shader);
+
+		glBindVertexArray(VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 3);
+		glBindVertexArray(0);
+
+		glUseProgram(0);
 
 		glfwSwapBuffers(mainWindow);
-
+		int a = 5;
 	}
 	return 0;
 }
-// 1 Properties | Compat and OpenGL version
+// 1 Properties | Compatibility and OpenGL version
 // 2 Actual WIndow | Create and Terminate
-// 3 Buffersize 
-// 4 Handel user input
+// 3 Buffer-size 
+// 4 Handel user input 
