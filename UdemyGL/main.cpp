@@ -12,13 +12,21 @@
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
 const unsigned int width = 800, height = 600;
+const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
 
 unsigned int VAO, VBO, shader, uniformModel; //VAO will holds  multiple VBOs
 
 bool direction = true;
 float basis = 0.0f;
 float limit = 0.7f;
-float increment = 0.0005f;
+float increment = 0.0010f;
+
+float curAngle = 0.0f;
+
+bool directionScale = true;
+float curSize = 0.1f;
+float minSize = 0.1f;
+float maxSize = 0.8f;
 
 //Vertex Shader
 static const char* vShader = "					  \n\
@@ -30,7 +38,7 @@ uniform mat4 model;							  \n\
 												  \n\
 void main()										  \n\
 {												  \n\
-	gl_Position = model * vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0); \n\
+	gl_Position = model * vec4(pos, 1.0); \n\
 }";
 //Fragment Shader
 
@@ -199,6 +207,27 @@ int main()
 		{
 			direction = !direction;
 		}
+
+		curAngle += 0.05f;
+		if (curAngle >= 360)
+		{
+			curAngle -= 360;
+		}
+
+		if (directionScale)
+		{
+			curSize += 0.0001f;
+		}
+		else
+		{
+			curSize -= 0.0001f;
+		}
+		
+		if (curSize >= maxSize || curSize <= minSize)
+		{
+			directionScale = !directionScale;
+		}
+
 		//Clear Window
 
 		glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
@@ -206,8 +235,15 @@ int main()
 		glUseProgram(shader);
 
 		glm::mat4 model(1.0f);
+		
+		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // we use ptr bcs model is cannot directly work with the shader
+		model = glm::scale(model, glm::vec3(curSize, curSize, 0.0f));
+
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
+		// Why we have to use projection matrix?
+		// How we changing constantly our axises bs of what?
+		// What happen when replace position of doing on rotate and translate?
 		
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
@@ -215,15 +251,13 @@ int main()
 
 	//	glUniform1f(uniformModel, basis);
 
-
-
 		glUseProgram(0);
 
 		glfwSwapBuffers(mainWindow);
 	}
 	return 0;
 }
-// 1 Properties | Compatibility and OpenGL version
-// 2 Actual WIndow | Create and Terminate
-// 3 Buffer-size 
-// 4 Handel user input 
+// we use ptr bcs model is cannot directly work with the shader
+//We this matrix we are like to rotate a trangle but it's look like more u have
+		// a plain paper with triangle on it and trying to rotate only trinagle when rotating the paper 
+		//We constantly changing our x Axis and so on..
