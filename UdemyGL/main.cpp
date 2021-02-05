@@ -1,14 +1,24 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <cmath>
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
+#include<glm/gtc/matrix_transform.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
+//glm::mat4 model(1.0f)
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
 const unsigned int width = 800, height = 600;
 
-unsigned int VAO, VBO, shader; //VAO will holds  multiple VBOs
+unsigned int VAO, VBO, shader, uniformModel; //VAO will holds  multiple VBOs
+
+bool direction = true;
+float basis = 0.0f;
+float limit = 0.7f;
+float increment = 0.0005f;
 
 //Vertex Shader
 static const char* vShader = "					  \n\
@@ -16,9 +26,11 @@ static const char* vShader = "					  \n\
 												  \n\
 layout (location = 0) in vec3 pos;				  \n\
 												  \n\
+uniform mat4 model;							  \n\
+												  \n\
 void main()										  \n\
 {												  \n\
-	gl_Position = vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0); \n\
+	gl_Position = model * vec4(0.4 * pos.x, 0.4 * pos.y, pos.z, 1.0); \n\
 }";
 //Fragment Shader
 
@@ -114,6 +126,8 @@ void CompileShaders()
 		printf("Error validating program: '&s'\n", eLog);
 		return;
 	}
+
+	uniformModel = glGetUniformLocation(shader, "model");
 }
 
 int main()
@@ -173,16 +187,35 @@ int main()
 		//Get & Handle user input events
 		glfwPollEvents();
 
+		if (direction)
+		{
+			basis += increment;
+		}
+		else
+		{
+			basis -= increment;
+		}
+		if (abs(basis) >= limit)
+		{
+			direction = !direction;
+		}
 		//Clear Window
 
 		glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
-
 		glUseProgram(shader);
 
+		glm::mat4 model(1.0f);
+		model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // we use ptr bcs model is cannot directly work with the shader
+		
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
+
+	//	glUniform1f(uniformModel, basis);
+
+
 
 		glUseProgram(0);
 
