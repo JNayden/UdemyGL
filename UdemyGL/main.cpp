@@ -40,7 +40,7 @@ uniform mat4 model;							      \n\
 void main()										  \n\
 {												  \n\
 	gl_Position = model * vec4(pos, 1.0); \n\
-	gCol = vec4(clamp(pos, 0.5f, 1.0f), 1.0f);										\n\
+	gCol = vec4(clamp(pos, 0.3f, 1.0f), 1.0f);										\n\
 }";
 //Fragment Shader
 
@@ -60,10 +60,10 @@ void CreateTriangle()
 {
 	unsigned int indeces[]
 	{
-		0, 2, 3,	//0,3,1,//
-		2, 1, 3,	//1,3,2,//
-		0, 1, 3,	//2,3,0,//
-		0, 1, 2		//0,1,2 //
+	0,3,1,	//0, 2, 3,	
+	1,3,2,	//2, 1, 3,	
+	2,3,0,	//0, 1, 3,	
+	0,1,2 	//0, 1, 2	
 	};
 	float vertices[]
 	{									  //
@@ -227,7 +227,7 @@ int main()
 			direction = !direction;
 		}
 
-		curAngle += 1.5f;
+		curAngle += 0.05f;
 		if (curAngle >= 360)
 		{
 			curAngle -= 360;
@@ -255,7 +255,7 @@ int main()
 
 		glm::mat4 model(1.0f);
 
-		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, curAngle * toRadians, glm::vec3(1.0f, 0.0f, 0.0f));
 		//model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6, 0.6, 1.0f));
 
