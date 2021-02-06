@@ -1,32 +1,21 @@
 #include <stdio.h>
 #include <string.h>
-
 #include <cmath>
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <glm/glm.hpp>
-#include<glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include <iostream>
+#include "GL/glew.h"
+#include "GLFW/glfw3.h"
+#include "glm/mat4x4.hpp"
 
-//glm::mat4 model(1.0f)
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
 const unsigned int width = 800, height = 600;
-const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
-
-unsigned int VAO, VBO, shader, uniformModel; //VAO will holds  multiple VBOs
+glm::mat4 model(1.0f);
+unsigned int VAO, VBO, shader, uniformXMove; //VAO will holds  multiple VBOs
 
 bool direction = true;
 float basis = 0.0f;
 float limit = 0.7f;
-float increment = 0.010f;
-
-float curAngle = 0.0f;
-
-bool directionScale = true;
-float curSize = 0.1f;
-float minSize = 0.1f;
-float maxSize = 0.8f;
+float increment = 0.020f;
 
 //Vertex Shader
 static const char* vShader = "					  \n\
@@ -34,11 +23,11 @@ static const char* vShader = "					  \n\
 												  \n\
 layout (location = 0) in vec3 pos;				  \n\
 												  \n\
-uniform mat4 model;							  \n\
+uniform float xMove;					   	  \n\
 												  \n\
 void main()										  \n\
 {												  \n\
-	gl_Position = model * vec4(pos, 1.0); \n\
+	gl_Position = vec4(0.4 * pos.x + xMove, 0.4 * pos.y, pos.z, 1.0); \n\
 }";
 //Fragment Shader
 
@@ -135,7 +124,7 @@ void CompileShaders()
 		return;
 	}
 
-	uniformModel = glGetUniformLocation(shader, "model");
+	uniformXMove = glGetUniformLocation(shader, "xMove");
 }
 
 int main()
@@ -195,6 +184,7 @@ int main()
 		//Get & Handle user input events
 		glfwPollEvents();
 
+
 		if (direction)
 		{
 			basis += increment;
@@ -207,50 +197,19 @@ int main()
 		{
 			direction = !direction;
 		}
-
-		curAngle += 0.5f;
-		if (curAngle >= 360)
-		{
-			curAngle -= 360;
-		}
-
-		if (directionScale)
-		{
-			curSize += 0.001f;
-		}
-		else
-		{
-			curSize -= 0.001f;
-		}
 		
-		if (curSize >= maxSize || curSize <= minSize)
-		{
-			directionScale = !directionScale;
-		}
-
 		//Clear Window
 
 		glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT);
+
 		glUseProgram(shader);
 
-		glm::mat4 model(1.0f);
+		glUniform1f(uniformXMove, basis);
 
-		
-		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
-		model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
-		model = glm::scale(model, glm::vec3(curSize, curSize, 0.0f));
-
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
-		// Why we have to use projection matrix?
-		// How we changing constantly our axises bs of what?
-		// What happen when replace position of doing on rotate and translate?
-		
 		glBindVertexArray(VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 3);
 		glBindVertexArray(0);
-
-	//	glUniform1f(uniformModel, basis);
 
 		glUseProgram(0);
 
@@ -264,3 +223,5 @@ int main()
 // 2 Actual WIndow | Create and Terminate
 // 3 Buffer-size 
 // 4 Handel user input 
+//#################################################
+//					 WORKING
