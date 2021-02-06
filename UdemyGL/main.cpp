@@ -14,7 +14,7 @@
 const unsigned int width = 800, height = 600;
 const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
 
-unsigned int VAO, VBO, shader, uniformModel; //VAO will holds  multiple VBOs
+unsigned int VAO, VBO, shader, uniformModel, IBO; //VAO will holds  multiple VBOs
 
 bool direction = true;
 float basis = 0.0f;
@@ -40,7 +40,7 @@ uniform mat4 model;							      \n\
 void main()										  \n\
 {												  \n\
 	gl_Position = model * vec4(pos, 1.0); \n\
-	gCol = vec4(clamp(pos, 0.0f, 1.0f), 1.0f);										\n\
+	gCol = vec4(clamp(pos, 0.5f, 1.0f), 1.0f);										\n\
 }";
 //Fragment Shader
 
@@ -58,19 +58,30 @@ void main()													  \n\
 
 void CreateTriangle()
 {
-	float vertices[]
+	unsigned int indeces[]
 	{
-		-1.0f, -1.0f, 0.0f,
-		1.0f, -1.0f, 0.0f,
-		0.0f, 1.0f, 0.0f
+		0, 2, 3,	//0,3,1,//
+		2, 1, 3,	//1,3,2,//
+		0, 1, 3,	//2,3,0,//
+		0, 1, 2		//0,1,2 //
 	};
-
+	float vertices[]
+	{									  //
+		-1.0f, -1.0f, 0.0f, //0
+		0.0f, -1.0f, 1.0f, // 1
+		1.0f, -1.0f, 0.0f, // 2			  //
+		0.0f, 1.0f, 0.0f   // 3    //            //
+	};
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
 
+	glGenBuffers(1, &IBO);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * 3 * sizeof(unsigned int), &indeces, GL_STATIC_DRAW);
+
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 3 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW);
 
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 	glEnableVertexAttribArray(0);
@@ -78,6 +89,8 @@ void CreateTriangle()
 	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
 
 	glBindVertexArray(0); //unbind VAO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 
 }
 void AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType)
@@ -181,13 +194,15 @@ int main()
 
 	glewExperimental = GL_TRUE;
 	GLenum error = glewInit();
-	if (!glfwInit())
+	if (error != GLEW_OK)
 	{
 		printf("GLEW initialization failed");
 		glfwDestroyWindow(mainWindow);
 		glfwTerminate();
 		return 1;
 	}
+
+	glEnable(GL_DEPTH_TEST);
 	//Setup Viewport size
 	glViewport(0, 0, bufferwidth, bufferheight);
 	CreateTriangle();
@@ -212,7 +227,7 @@ int main()
 			direction = !direction;
 		}
 
-		curAngle += 0.5f;
+		curAngle += 1.5f;
 		if (curAngle >= 360)
 		{
 			curAngle -= 360;
@@ -235,14 +250,14 @@ int main()
 		//Clear Window
 
 		glClearColor(0.0f, 0.0f, 1.0f, 0.0f);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glUseProgram(shader);
 
 		glm::mat4 model(1.0f);
 
-		//model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
+		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		//model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
-		model = glm::scale(model, glm::vec3(0.8, 0.8, 0.0f));
+		model = glm::scale(model, glm::vec3(0.6, 0.6, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
 		// Why we have to use projection matrix?
@@ -250,7 +265,11 @@ int main()
 		// What happen when replace position of doing on rotate and translate?
 		
 		glBindVertexArray(VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 3);
+
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);				//glDrawArrays(GL_TRIANGLES, 0, 3);
+		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 		glBindVertexArray(0);
 
 	//	glUniform1f(uniformModel, basis);
