@@ -19,7 +19,7 @@ unsigned int VAO, VBO, shader, uniformModel; //VAO will holds  multiple VBOs
 bool direction = true;
 float basis = 0.0f;
 float limit = 0.7f;
-float increment = 0.0010f;
+float increment = 0.010f;
 
 float curAngle = 0.0f;
 
@@ -208,7 +208,7 @@ int main()
 			direction = !direction;
 		}
 
-		curAngle += 0.05f;
+		curAngle += 0.5f;
 		if (curAngle >= 360)
 		{
 			curAngle -= 360;
@@ -216,11 +216,11 @@ int main()
 
 		if (directionScale)
 		{
-			curSize += 0.0001f;
+			curSize += 0.001f;
 		}
 		else
 		{
-			curSize -= 0.0001f;
+			curSize -= 0.001f;
 		}
 		
 		if (curSize >= maxSize || curSize <= minSize)
@@ -235,6 +235,7 @@ int main()
 		glUseProgram(shader);
 
 		glm::mat4 model(1.0f);
+
 		
 		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
