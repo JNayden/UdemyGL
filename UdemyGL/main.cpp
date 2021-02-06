@@ -258,6 +258,7 @@ int main()
 	}
 	return 0;
 
+
 }
 // 1 Properties | Compatibility and OpenGL version
 // 2 Actual WIndow | Create and Terminate
