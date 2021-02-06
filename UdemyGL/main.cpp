@@ -8,18 +8,24 @@
 #include<glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+// 1st Mesh class Create() Renderer() Delete()
+// 2nd Shader Fstrem string/ 2 of the functions
+// 3d Window for Predefenitions of GLFW
+
+
+
 //glm::mat4 model(1.0f)
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
 const unsigned int width = 800, height = 600;
 const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
 
-unsigned int VAO, VBO, shader, uniformModel, IBO; //VAO will holds  multiple VBOs
+unsigned int VAO, VBO, shader, uniformModel, IBO, uniformProjection; //VAO will holds  multiple VBOs
 
 bool direction = true;
 float basis = 0.0f;
-float limit = 0.7f;
-float increment = 0.010f;
+float limit = 1.0f;
+float increment = 0.0005f;
 
 float curAngle = 0.0f;
 
@@ -33,13 +39,14 @@ static const char* vShader = "					  \n\
 #version 330 								      \n\
 												  \n\
 layout (location = 0) in vec3 pos;				  \n\
-out vec4 gCol;								\n\
+out vec4 gCol;									  \n\
 												  \n\
 uniform mat4 model;							      \n\
+uniform mat4 projection;											  \n\
 												  \n\
 void main()										  \n\
 {												  \n\
-	gl_Position = model * vec4(pos, 1.0); \n\
+	gl_Position = projection * model * vec4(pos, 1.0);  \n\
 	gCol = vec4(clamp(pos, 0.5f, 1.0f), 1.0f);										\n\
 }";
 //Fragment Shader
@@ -153,6 +160,7 @@ void CompileShaders()
 	}
 
 	uniformModel = glGetUniformLocation(shader, "model");
+	uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 int main()
@@ -216,18 +224,18 @@ int main()
 
 		if (direction)
 		{
-			basis += increment;
+			basis += increment * 0.2;
 		}
 		else
 		{
-			basis -= increment;
+			basis -= increment * 0.2;
 		}
 		if (abs(basis) >= limit)
 		{
 			direction = !direction;
 		}
 
-		curAngle += 1.5f;
+		curAngle += 0.05f;
 		if (curAngle >= 360)
 		{
 			curAngle -= 360;
@@ -255,11 +263,17 @@ int main()
 
 		glm::mat4 model(1.0f);
 
+		
+		model = glm::translate(model, glm::vec3(0.0f, basis, -3.0f));
 		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6, 0.6, 1.0f));
 
+		glm::mat4 projection(1.0f);
+		projection = glm::perspective(45.0f, (float)bufferwidth / (float)bufferheight, 0.1f, 100.0f);
+
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection)); 
+
 		// Why we have to use projection matrix?
 		// How we changing constantly our axises bs of what?
 		// What happen when replace position of doing on rotate and translate?
