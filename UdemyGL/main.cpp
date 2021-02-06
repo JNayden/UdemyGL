@@ -236,7 +236,6 @@ int main()
 
 		glm::mat4 model(1.0f);
 
-		
 		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 0.0f, 1.0f));
 		model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
 		model = glm::scale(model, glm::vec3(curSize, curSize, 0.0f));
@@ -256,9 +255,9 @@ int main()
 
 		glfwSwapBuffers(mainWindow);
 	}
+
+
 	return 0;
-
-
 }
 // 1 Properties | Compatibility and OpenGL version
 // 2 Actual WIndow | Create and Terminate
