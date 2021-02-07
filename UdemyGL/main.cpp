@@ -8,18 +8,33 @@
 #include<glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Mesh.h"
+#include <vector>
+
+// 1st Mesh class	GLsizei indeces
+//					Create() incdices vertices numofi numofv
+//				Renderer() 
+	//				Delete()
+// 2nd Shader Fstrem string/ 2 of the functions
+// 3d Window for Predefenitions of GLFW
+
+
+
 //glm::mat4 model(1.0f)
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
+
+std::vector<Mesh*> meshList;
 const unsigned int width = 800, height = 600;
 const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
 
-unsigned int VAO, VBO, shader, uniformModel, IBO; //VAO will holds  multiple VBOs
+unsigned int shader, uniformModel, uniformProjection; //VAO will holds  multiple VBOs
+
 
 bool direction = true;
 float basis = 0.0f;
-float limit = 0.7f;
-float increment = 0.010f;
+float limit = 1.0f;
+float increment = 0.0005f;
 
 float curAngle = 0.0f;
 
@@ -33,13 +48,14 @@ static const char* vShader = "					  \n\
 #version 330 								      \n\
 												  \n\
 layout (location = 0) in vec3 pos;				  \n\
-out vec4 gCol;								\n\
+out vec4 gCol;									  \n\
 												  \n\
 uniform mat4 model;							      \n\
+uniform mat4 projection;											  \n\
 												  \n\
 void main()										  \n\
 {												  \n\
-	gl_Position = model * vec4(pos, 1.0); \n\
+	gl_Position = projection * model * vec4(pos, 1.0);  \n\
 	gCol = vec4(clamp(pos, 0.5f, 1.0f), 1.0f);										\n\
 }";
 //Fragment Shader
@@ -58,12 +74,12 @@ void main()													  \n\
 
 void CreateTriangle()
 {
-	unsigned int indeces[]
+	unsigned int indices[]
 	{
-		0, 2, 3,	//0,3,1,//
-		2, 1, 3,	//1,3,2,//
-		0, 1, 3,	//2,3,0,//
-		0, 1, 2		//0,1,2 //
+	0,3,1,	//0, 2, 3,	
+	1,3,2,	//2, 1, 3,	
+	2,3,0,	//0, 1, 3,	
+	0,1,2 	//0, 1, 2	
 	};
 	float vertices[]
 	{									  //
@@ -72,26 +88,13 @@ void CreateTriangle()
 		1.0f, -1.0f, 0.0f, // 2			  //
 		0.0f, 1.0f, 0.0f   // 3    //            //
 	};
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	Mesh* obj1 = new Mesh(); //calloc vs malloc
+	obj1->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj1);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * 3 * sizeof(unsigned int), &indeces, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
-
-	glBindVertexArray(0); //unbind VAO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-
+	Mesh* obj2 = new Mesh(); //calloc vs malloc
+	obj2->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj2);
 }
 void AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType)
 {
@@ -153,6 +156,7 @@ void CompileShaders()
 	}
 
 	uniformModel = glGetUniformLocation(shader, "model");
+	uniformProjection = glGetUniformLocation(shader, "projection");
 }
 
 int main()
@@ -208,6 +212,8 @@ int main()
 	CreateTriangle();
 	CompileShaders();
 
+	glm::mat4 projection = glm::perspective(45.0f, (float)bufferwidth / (float)bufferheight, 0.1f, 100.0f);
+
 	//Loop until window closed
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -216,18 +222,18 @@ int main()
 
 		if (direction)
 		{
-			basis += increment;
+			basis += increment * 0.2;
 		}
 		else
 		{
-			basis -= increment;
+			basis -= increment * 0.2;
 		}
 		if (abs(basis) >= limit)
 		{
 			direction = !direction;
 		}
 
-		curAngle += 1.5f;
+		curAngle += 0.05f;
 		if (curAngle >= 360)
 		{
 			curAngle -= 360;
@@ -241,7 +247,7 @@ int main()
 		{
 			curSize -= 0.001f;
 		}
-		
+
 		if (curSize >= maxSize || curSize <= minSize)
 		{
 			directionScale = !directionScale;
@@ -255,24 +261,27 @@ int main()
 
 		glm::mat4 model(1.0f);
 
+
+		model = glm::translate(model, glm::vec3(basis, 0.0f, -3.0f));
 		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		//model = glm::translate(model, glm::vec3(basis, basis, 0.0f));
-		model = glm::scale(model, glm::vec3(0.6, 0.6, 1.0f));
+		model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f));
 
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
-		// Why we have to use projection matrix?
-		// How we changing constantly our axises bs of what?
-		// What happen when replace position of doing on rotate and translate?
-		
-		glBindVertexArray(VAO);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);				//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		meshList[0]->RenderMesh();
 
-		glBindVertexArray(0);
+		model = glm::mat4(1.0f); //Instead of creating new model we can use the current bcs of?
+		model = glm::translate(model, glm::vec3(-basis, 1.0f, -3.0f));
+		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f));
 
-	//	glUniform1f(uniformModel, basis);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+
+		meshList[1]->RenderMesh();
+
+		//	glUniform1f(uniformModel, basis);
 
 		glUseProgram(0);
 
@@ -284,3 +293,7 @@ int main()
 // 2 Actual WIndow | Create and Terminate
 // 3 Buffer-size 
 // 4 Handel user input 
+
+// Why we have to use projection matrix?
+		// How we changing constantly our axises bs of what?
+		// What happen when replace position of doing on rotate and translate?
