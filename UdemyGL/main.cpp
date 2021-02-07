@@ -8,13 +8,17 @@
 #include<glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include "Mesh.h"
+#include <vector>
+
 //glm::mat4 model(1.0f)
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
 const unsigned int width = 800, height = 600;
 const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
 
-unsigned int VAO, VBO, shader, uniformModel, IBO; //VAO will holds  multiple VBOs
+std::vector<Mesh*> meshList;
+unsigned int shader, uniformModel; 
 
 bool direction = true;
 float basis = 0.0f;
@@ -58,7 +62,7 @@ void main()													  \n\
 
 void CreateTriangle()
 {
-	unsigned int indeces[]
+	unsigned int indices[]
 	{
 	0,3,1,	//0, 2, 3,	
 	1,3,2,	//2, 1, 3,	
@@ -72,26 +76,10 @@ void CreateTriangle()
 		1.0f, -1.0f, 0.0f, // 2			  //
 		0.0f, 1.0f, 0.0f   // 3    //            //
 	};
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * 3 * sizeof(unsigned int), &indeces, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
-
-	glBindVertexArray(0); //unbind VAO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-
+	Mesh* obj1 = new Mesh();
+	obj1->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj1);
 }
 void AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType)
 {
@@ -264,13 +252,7 @@ int main()
 		// How we changing constantly our axises bs of what?
 		// What happen when replace position of doing on rotate and translate?
 		
-		glBindVertexArray(VAO);
-
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);				//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-		glBindVertexArray(0);
+		meshList[0]->RenderMesh();
 
 	//	glUniform1f(uniformModel, basis);
 
