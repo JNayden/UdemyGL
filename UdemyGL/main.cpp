@@ -16,7 +16,6 @@
 #include "Shader.h"
 
 //OpenGL library identifies what card drive i am already using
-//Windows Dimension
 
 Window mainWindow;	
 std::vector<Mesh*> meshList;
