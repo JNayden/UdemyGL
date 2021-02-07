@@ -8,7 +8,13 @@
 #include<glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// 1st Mesh class Create() Renderer() Delete()
+#include "Mesh.h"
+#include <vector>
+
+// 1st Mesh class	GLsizei indeces
+//					Create() incdices vertices numofi numofv
+//				Renderer() 
+	//				Delete()
 // 2nd Shader Fstrem string/ 2 of the functions
 // 3d Window for Predefenitions of GLFW
 
@@ -17,10 +23,13 @@
 //glm::mat4 model(1.0f)
 //OpenGL library identifies what card drive i am already using
 //Windows Dimension
+
+std::vector<Mesh*> meshList;
 const unsigned int width = 800, height = 600;
 const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
 
-unsigned int VAO, VBO, shader, uniformModel, IBO, uniformProjection; //VAO will holds  multiple VBOs
+unsigned int shader, uniformModel, uniformProjection; //VAO will holds  multiple VBOs
+
 
 bool direction = true;
 float basis = 0.0f;
@@ -65,7 +74,7 @@ void main()													  \n\
 
 void CreateTriangle()
 {
-	unsigned int indeces[]
+	unsigned int indices[]
 	{
 		0, 2, 3,	//0,3,1,//
 		2, 1, 3,	//1,3,2,//
@@ -79,26 +88,13 @@ void CreateTriangle()
 		1.0f, -1.0f, 0.0f, // 2			  //
 		0.0f, 1.0f, 0.0f   // 3    //            //
 	};
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	Mesh* obj1 = new Mesh(); //calloc vs malloc
+	obj1->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj1);
 
-	glGenBuffers(1, &IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, 4 * 3 * sizeof(unsigned int), &indeces, GL_STATIC_DRAW);
-
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, 4 * 3 * sizeof(float), &vertices, GL_STATIC_DRAW);
-
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
-	glEnableVertexAttribArray(0);
-
-	glBindBuffer(GL_ARRAY_BUFFER, 0); // unbind VBO
-
-	glBindVertexArray(0); //unbind VAO
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-
-
+	Mesh* obj2 = new Mesh(); //calloc vs malloc
+	obj2->CreateMesh(vertices, indices, 12, 12);
+	meshList.push_back(obj2);
 }
 void AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType)
 {
@@ -216,6 +212,8 @@ int main()
 	CreateTriangle();
 	CompileShaders();
 
+	glm::mat4 projection = glm::perspective(45.0f, (float)bufferwidth / (float)bufferheight, 0.1f, 100.0f);
+
 	//Loop until window closed
 	while (!glfwWindowShouldClose(mainWindow))
 	{
@@ -264,27 +262,24 @@ int main()
 		glm::mat4 model(1.0f);
 
 		
-		model = glm::translate(model, glm::vec3(0.0f, basis, -3.0f));
+		model = glm::translate(model, glm::vec3(basis, 0.0f, -3.0f));
 		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
-		model = glm::scale(model, glm::vec3(0.6, 0.6, 1.0f));
-
-		glm::mat4 projection(1.0f);
-		projection = glm::perspective(45.0f, (float)bufferwidth / (float)bufferheight, 0.1f, 100.0f);
+		model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection)); 
 
-		// Why we have to use projection matrix?
-		// How we changing constantly our axises bs of what?
-		// What happen when replace position of doing on rotate and translate?
-		
-		glBindVertexArray(VAO);
+		meshList[0]->RenderMesh();
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);				//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		model = glm::mat4(1.0f); //Instead of creating new model we can use the current bcs of?
+		model = glm::translate(model, glm::vec3(-basis, 1.0f, -3.0f));
+		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f));
 
-		glBindVertexArray(0);
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+
+		meshList[1]->RenderMesh();
 
 	//	glUniform1f(uniformModel, basis);
 
@@ -298,3 +293,7 @@ int main()
 // 2 Actual WIndow | Create and Terminate
 // 3 Buffer-size 
 // 4 Handel user input 
+
+// Why we have to use projection matrix?
+		// How we changing constantly our axises bs of what?
+		// What happen when replace position of doing on rotate and translate?
