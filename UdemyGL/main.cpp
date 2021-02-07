@@ -247,7 +247,7 @@ int main()
 		{
 			curSize -= 0.001f;
 		}
-		
+
 		if (curSize >= maxSize || curSize <= minSize)
 		{
 			directionScale = !directionScale;
@@ -261,13 +261,13 @@ int main()
 
 		glm::mat4 model(1.0f);
 
-		
+
 		model = glm::translate(model, glm::vec3(basis, 0.0f, -3.0f));
 		model = glm::rotate(model, curAngle * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.4, 0.4, 1.0f));
 
-		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); 
-		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection)); 
+		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
+		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
 
 		meshList[0]->RenderMesh();
 
@@ -281,7 +281,7 @@ int main()
 
 		meshList[1]->RenderMesh();
 
-	//	glUniform1f(uniformModel, basis);
+		//	glUniform1f(uniformModel, basis);
 
 		glUseProgram(0);
 
