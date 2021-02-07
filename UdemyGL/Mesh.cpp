@@ -1,4 +1,5 @@
 #include "Mesh.h"
+
 Mesh::Mesh()
 {
 	VAO = 0;
@@ -11,7 +12,7 @@ void Mesh::CreateMesh(float* vertices, unsigned int* indices, unsigned int numOf
 {
 	indexCount = numOfIndices;
 	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	glBindVertexArray(VAO); 
 
 	glGenBuffers(1, &IBO);
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);
@@ -29,13 +30,14 @@ void Mesh::CreateMesh(float* vertices, unsigned int* indices, unsigned int numOf
 	glBindVertexArray(0); //unbind VAO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
+
 void Mesh::RenderMesh()
 {
 	glBindVertexArray(VAO);
 
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);				//glDrawArrays(GL_TRIANGLES, 0, 3);
-		glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO);				//glDrawArrays(GL_TRIANGLES, 0, 3);
+	glDrawElements(GL_TRIANGLES, indexCount, GL_UNSIGNED_INT, 0);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(0);
 }
@@ -43,7 +45,7 @@ void Mesh::DeleteMesh()
 {
 	if (VAO != 0)
 	{
-		glDeleteVertexArrays(1, &VAO);
+		glDeleteBuffers(1, &VAO);
 		VAO = 0;
 	}
 	if (VBO != 0)
@@ -56,6 +58,7 @@ void Mesh::DeleteMesh()
 		glDeleteBuffers(1, &IBO);
 		IBO = 0;
 	}
+	indexCount = 0;
 }
 Mesh::~Mesh()
 {
