@@ -1,8 +1,5 @@
 # UdemyGL
 
-
-# To Run
-=======
 # Instructions to run:
 
 
