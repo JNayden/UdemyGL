@@ -1,5 +1,5 @@
 # UdemyGL
 
-# Run
+# To Run
 
 Configuration Manager - x86(Win32)
