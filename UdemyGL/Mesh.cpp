@@ -62,4 +62,5 @@ void Mesh::DeleteMesh()
 Mesh::~Mesh()
 {
 	DeleteMesh();
+	indexCount = 0;
 }
