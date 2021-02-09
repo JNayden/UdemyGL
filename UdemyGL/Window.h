@@ -25,5 +25,10 @@ private:
 	GLFWwindow* mainWindow;
 	int width, height;
 	int bufferWidth, bufferHeight;
+
+	bool keys[1024];
+	
+	void createCallBacks();
+	static void HandleKeys(GLFWwindow* window, int key, int code, int action, int mode);// Handle function
 };
 
