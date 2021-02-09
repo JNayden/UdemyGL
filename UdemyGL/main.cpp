@@ -16,7 +16,6 @@
 #include "Shader.h"
 
 //OpenGL library identifies what card drive i am already using
-//Windows Dimension
 
 Window mainWindow;	
 std::vector<Mesh*> meshList;
@@ -63,7 +62,7 @@ void CreateShaders()
 
 int main()
 {
-	mainWindow = Window(1024, 768);
+	mainWindow = Window(800, 600);
 	mainWindow.Initialise();
 
 	CreateObjects();
@@ -102,7 +101,7 @@ int main()
 
 		model = glm::mat4(1.0f); //Instead of creating new model we can use the current bcs of?
 		model = glm::translate(model, glm::vec3(-0.0f, 1.0f, -3.0f));
-		model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0));
 		model = glm::scale(model, glm::vec3(0.6, 0.4, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // attaching everything to a new model
