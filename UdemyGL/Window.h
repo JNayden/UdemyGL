@@ -13,12 +13,12 @@ public:
 
 	int Initialise();
 
-	float getBufferWidth() { return bufferWidth; }
-	float getBufferHeight() { return bufferHeight; }
+	int getBufferWidth() { return bufferWidth; }
+	int getBufferHeight() { return bufferHeight; }
 
 	bool getShouldClose() { return glfwWindowShouldClose(mainWindow); }
 
-	bool* getKeys() {return keys;}
+	bool* getKeys() { return keys; }
 	float getXChange();
 	float getYChange();
 
@@ -27,17 +27,18 @@ public:
 	~Window();
 private:
 	GLFWwindow* mainWindow;
+
 	int width, height;
 	int bufferWidth, bufferHeight;
 
 	bool keys[1024];
 
-	bool mouseFirstMoved;
 	float xChange, yChange;
 	float lastX, lastY;
+	bool mouseFirstMoved;
 	
 	void createCallBacks();
-	static void HandleKeys(GLFWwindow* window, int key, int code, int action, int mode);// Handle function
-	static void HandleMouse(GLFWwindow* window, double xPos, double  yPos); // i change double to float
+	static void handleKeys(GLFWwindow* window, int key, int code, int action, int mode);// Handle function
+	static void handleMouse(GLFWwindow* window, double xPos, double  yPos); // i change double to float
 };
 

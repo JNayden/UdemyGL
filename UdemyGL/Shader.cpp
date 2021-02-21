@@ -1,8 +1,4 @@
 #include "Shader.h"
-#include <iostream>
-#include <stdio.h>
-#include <fstream>
-#include <string>
 
 Shader::Shader()
 {
@@ -35,7 +31,7 @@ std::string Shader::ReadFile(const char* fileLocation)//
 		return "";
 		//i assume that the next while is for making a new line if it's the end of line
 	}
-	std::string line;
+	std::string line = "";
 	while (!fileStream.eof())
 	{
 		std::getline(fileStream, line);
@@ -65,7 +61,7 @@ void Shader::CompileShaders(const char* vertexCode, const char* fragmenCode)
 	if (!result)
 	{
 		glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog); //info for program pass into the eLog;
-		printf("Error linking program: '&s'\n", eLog);
+		printf("Error linking program: '%s'\n", eLog);
 		return;
 	}
 
@@ -74,12 +70,12 @@ void Shader::CompileShaders(const char* vertexCode, const char* fragmenCode)
 	if (!result)
 	{
 		glGetProgramInfoLog(shaderID, sizeof(eLog), NULL, eLog);
-		printf("Error validating program: '&s'\n", eLog);
+		printf("Error validating program: '%s'\n", eLog);
 		return;
 	}
-
-	uniformModel = glGetUniformLocation(shaderID, "model");
 	uniformProjection = glGetUniformLocation(shaderID, "projection");
+	uniformModel = glGetUniformLocation(shaderID, "model");
+	uniformView = glGetUniformLocation(shaderID, "view"); ////
 }
 
 unsigned int Shader::getProjectionLocation()
@@ -91,8 +87,27 @@ unsigned int Shader::getModelLocation()
 {
 	return uniformModel;
 }
+unsigned int Shader::getViewLocation()	////
+{										////
+	return uniformView;					////
+}
 
+void Shader::useShader()	
+{
+	glUseProgram(shaderID);
+}
 
+void Shader::clearShader()
+{
+	if (shaderID != 0)
+	{
+		glDeleteProgram(shaderID);
+		shaderID = 0;
+	}
+	uniformModel = 0;
+	uniformProjection = 0;
+	//uniformView = 0;
+}	
 void Shader::AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType)
 {
 	unsigned int theShader = glCreateShader(shaderType);
@@ -113,27 +128,13 @@ void Shader::AddShader(unsigned int theProgram, const char* shaderCode, GLenum s
 	if (!result)
 	{
 		glGetShaderInfoLog(theShader, sizeof(eLog), NULL, eLog); //info for program pass into the eLog;
-		printf("Error compiling the %d shader:  '&s'\n", shaderType, eLog);
+		printf("Error compiling the %d shader: '%s'\n", shaderType, eLog);
 		return;
 	}
 
 	glAttachShader(theProgram, theShader);
 }
-void Shader::useShader()
-{
-	glUseProgram(shaderID);
-}
 
-void Shader::clearShader()
-{
-	if (shaderID != 0)
-	{
-		glDeleteProgram(shaderID);
-		shaderID = 0;
-	}
-	uniformModel = 0;
-	uniformProjection = 0;
-}
 
 Shader::~Shader()
 {
