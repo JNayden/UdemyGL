@@ -1,11 +1,10 @@
 #include <stdio.h>
 #include <string.h>
-
 #include <vector>
 #include <cmath>
 
 #include "GL/glew.h"
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -14,14 +13,20 @@
 #include "Window.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "Camera.h"
 
 //OpenGL library identifies what card drive i am already using
 
-Window mainWindow;	
+const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
+
+Window mainWindow;
 std::vector<Mesh*> meshList;
 std::vector<Shader> shaderList;
+Camera camera; ///
 
-const float toRadians = 3.14159265f / 180.0f; // when we multiply something with this var is converted to radians
+float deltaTime; // what the time was last time we checked
+float lastTime;
+
 
 //Vertex Shader
 static const char* vShader = "Shaders/shader.vert";//
@@ -67,17 +72,26 @@ int main()
 
 	CreateObjects();
 	CreateShaders();//
+	camera = Camera(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), -90.0f, 0.0f, 5.0f, 0.1f); ///
 
 	unsigned int uniformProjection = 0;//
 	unsigned int uniformModel = 0;//
-
-	glm::mat4 projection = glm::perspective(45.0f, mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 100.0f);
+	unsigned int uniformView = 0; //////
+																
+	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
 	//Loop until window closed
 	while (!mainWindow.getShouldClose())
 	{
+		float now = glfwGetTime();
+		deltaTime = now - lastTime;
+		lastTime = now;
+
 		//Get & Handle user input events
 		glfwPollEvents();
+
+		camera.keyControl(mainWindow.getKeys(), deltaTime);
+		camera.mouseControl(mainWindow.getXChange(), mainWindow.getYChange());
 
 		//Clear Window
 
@@ -85,23 +99,26 @@ int main()
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		shaderList[0].useShader();
-		uniformProjection = shaderList[0].getProjectionLocation();
 		uniformModel = shaderList[0].getModelLocation();
+		uniformProjection = shaderList[0].getProjectionLocation();
+		uniformView = shaderList[0].getViewLocation(); ////
+		
 
 		glm::mat4 model(1.0f);
 
 		model = glm::translate(model, glm::vec3(0.0f, 0.0f, -3.0f));
-		model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
+		//model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0.0f));
 		model = glm::scale(model, glm::vec3(0.6, 0.4, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model));
 		glUniformMatrix4fv(uniformProjection, 1, GL_FALSE, glm::value_ptr(projection));
+		glUniformMatrix4fv(uniformView, 1, GL_FALSE, glm::value_ptr(camera.calculateViewMatrix())); ////
 
 		meshList[0]->RenderMesh();
 
 		model = glm::mat4(1.0f); //Instead of creating new model we can use the current bcs of?
-		model = glm::translate(model, glm::vec3(-0.0f, 1.0f, -3.0f));
-		model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0));
+		model = glm::translate(model, glm::vec3(0.0f, 1.0f, -3.0f));
+		//model = glm::rotate(model, 45 * toRadians, glm::vec3(0.0f, 1.0f, 0));
 		model = glm::scale(model, glm::vec3(0.6, 0.4, 1.0f));
 
 		glUniformMatrix4fv(uniformModel, 1, GL_FALSE, glm::value_ptr(model)); // attaching everything to a new model
@@ -109,9 +126,9 @@ int main()
 		meshList[1]->RenderMesh();
 
 		//	glUniform1f(uniformModel, basis);
-
 		glUseProgram(0);
-
+		
+		
 		mainWindow.swapBuffers();
 	}
 	return 0;

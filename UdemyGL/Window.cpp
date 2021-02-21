@@ -1,21 +1,19 @@
 #include "Window.h"
 #include <stdio.h>
 #include <windows.h>
+
 Window::Window()
 {
 	width = 800;
 	height = 600;
 
-	mouseFirstMoved = false;
-	xChange = 0.0f;
-	yChange = 0.0f;
-	lastX = 0.0f;
-	lastY = 0.0f;
-
 	for (size_t i = 0; i < 1024; i++)
 	{
-		keys[i] = false; // false or 0
+		keys[i] = 0; // false or 0
 	}
+
+	xChange = 0.0f;
+	yChange = 0.0f;
 }
 Window::Window(int windowWidth, int windowHeight)
 {
@@ -23,16 +21,15 @@ Window::Window(int windowWidth, int windowHeight)
 	width = windowWidth;
 	height = windowHeight;
 
-	mouseFirstMoved = false;
-	xChange = 0.0f;
-	yChange = 0.0f;
-	lastX = 0.0f;
-	lastY = 0.0f;
-
 	for (size_t i = 0; i < 1024; i++)
 	{
-		keys[i] = false;			//	am i need it
+		keys[i] = 0;			//	am i need it
 	}
+
+	xChange = 0.0f;
+	yChange = 0.0f;
+	//lastX = 0.0f;
+	//lastY = 0.0f;
 }
 
 int Window::Initialise()
@@ -71,7 +68,7 @@ int Window::Initialise()
 	glfwMakeContextCurrent(mainWindow);
 
 	//Handel key + Mouse input
-
+	
 	createCallBacks();
 	glfwSetInputMode(mainWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -81,22 +78,22 @@ int Window::Initialise()
 	GLenum error = glewInit();
 	if (error != GLEW_OK)
 	{
-		printf("GLEW initialization failed");
+		printf("GLEW initialization failed %s", glewGetErrorString(error));
 		glfwDestroyWindow(mainWindow);
 		glfwTerminate();
 		return 1;
 	}
-
+	glfwSwapInterval(0);
 	glEnable(GL_DEPTH_TEST);
 	//Setup Viewport size
 	glViewport(0, 0, bufferWidth, bufferHeight);
 	glfwSetWindowUserPointer(mainWindow, this); //pointer to Handle
 }
 
-void Window::createCallBacks()
+void Window::createCallBacks()    
 {
-	glfwSetKeyCallback(mainWindow, HandleKeys);
-	glfwSetCursorPosCallback(mainWindow, HandleMouse);
+	glfwSetKeyCallback(mainWindow, handleKeys);
+	glfwSetCursorPosCallback(mainWindow, handleMouse);
 }
 float Window::getXChange()		  //??
 {								  //??
@@ -109,9 +106,8 @@ float Window::getYChange()		  //??
 	float theChange = yChange;	  //??
 	yChange = 0.0f;				  //??
 	return theChange;			  //??
-}								  //??
-
-void Window::HandleKeys(GLFWwindow* window, int key, int code, int action, int mode)
+}								  //?? 
+void Window::handleKeys(GLFWwindow* window, int key, int code, int action, int mode)
 {
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 	//	get "this" from above and then pass it to the window and now we can access key massive
@@ -123,26 +119,28 @@ void Window::HandleKeys(GLFWwindow* window, int key, int code, int action, int m
 	{
 		if (action == GLFW_PRESS)
 		{
-			theWindow->keys[key] == true;
+			theWindow->keys[key] = true;
+			//printf("pressed: %i\n", key);
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			theWindow->keys[key] == false;
+			theWindow->keys[key] = false;
+			//printf("release: %i\n", key);
 		}
 	}
 }
-void Window::HandleMouse(GLFWwindow* window, double xPos, double yPos) // ichange double to float
+void Window::handleMouse(GLFWwindow* window, double xPos, double yPos) // ichange double to float
 {	// change xpos last x
 	//firstMoved lastx lasty the change that we have to evaluate
 	Window* theWindow = static_cast<Window*>(glfwGetWindowUserPointer(window));
 	if (theWindow->mouseFirstMoved)
 	{
-		theWindow->lastX = xPos;
-		theWindow->lastY = yPos;
+		theWindow->lastX = (float)xPos;
+		theWindow->lastY = (float)yPos;
 		theWindow->mouseFirstMoved = false;
 	}
 	theWindow->xChange = xPos - theWindow->lastX;
-	theWindow->yChange = yPos - theWindow->lastY;
+	theWindow->yChange = theWindow->lastY - yPos;
 
 	theWindow->lastX = xPos;
 	theWindow->lastY = yPos;
@@ -150,7 +148,7 @@ void Window::HandleMouse(GLFWwindow* window, double xPos, double yPos) // ichang
 	//printf("x:%.6f, y:%.6f\n", theWindow->xChange, theWindow->yChange);
 }
 
-//Usage of Handle
+//Usage of Handle	
 //strange assignemnt
 // GLFW key functions
 
