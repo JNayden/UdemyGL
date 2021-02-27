@@ -18,13 +18,15 @@ public:
 	unsigned int getModelLocation();
 	unsigned int getProjectionLocation();
 	unsigned int getViewLocation(); ////
+	unsigned int getAmbientIntensityLocation();
+	unsigned int getAmbientColourLocation();
 
 	void useShader();
 	void clearShader();
 
 	~Shader();
 private:
-	unsigned int shaderID, uniformProjection, uniformModel, uniformView;
+	unsigned int shaderID, uniformProjection, uniformModel, uniformView, uniformAmbientIntensity, uniformAmbientColour;
 
 	void CompileShaders(const char* vertexCode, const char* fragmenCode);
 	void AddShader(unsigned int theProgram, const char* shaderCode, GLenum shaderType);
