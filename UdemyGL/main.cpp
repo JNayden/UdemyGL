@@ -17,6 +17,7 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "Texture.h"
+#include "Light.h"
 
 //OpenGL library identifies what card drive i am already using
 
@@ -29,6 +30,7 @@ Camera camera; ///
 
 Texture brickTexture;
 Texture dirtTexture;
+Light mainLight;
 
 float deltaTime; // what the time was last time we checked
 float lastTime;
@@ -86,9 +88,13 @@ int main()
 	dirtTexture = Texture("Textures/dirt.png");
 	dirtTexture.LoadTexture();
 
-	unsigned int uniformProjection = 0;//
-	unsigned int uniformModel = 0;//
-	unsigned int uniformView = 0; //////
+	mainLight = Light(1.0f, 1.0f, 1.0f, 0.2f);
+
+	unsigned int uniformProjection = 0;
+	unsigned int uniformModel = 0;
+	unsigned int uniformView = 0; 
+	unsigned int uniformAmbientColour = 0;///
+	unsigned int uniformAmbientIntensity = 0;///
 																
 	glm::mat4 projection = glm::perspective(glm::radians(45.0f), (float)mainWindow.getBufferWidth() / mainWindow.getBufferHeight(), 0.1f, 1000.0f);
 
@@ -114,6 +120,10 @@ int main()
 		uniformModel = shaderList[0].getModelLocation();
 		uniformProjection = shaderList[0].getProjectionLocation();
 		uniformView = shaderList[0].getViewLocation(); ////
+		uniformAmbientColour = shaderList[0].getAmbientColourLocation();
+		uniformAmbientIntensity = shaderList[0].getAmbientIntensityLocation();
+
+		mainLight.UseLight(uniformAmbientIntensity, uniformAmbientColour);
 		
 
 		glm::mat4 model(1.0f);

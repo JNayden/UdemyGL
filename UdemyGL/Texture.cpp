@@ -21,7 +21,7 @@ void Texture::LoadTexture()
 	unsigned char* texData = stbi_load(fileLocation.c_str(), &width, &height, &bitDepth, 0);
 	if (!texData)
 	{
-		printf("Failed to read: %s\n", fileLocation);
+		printf ("Failed to read: %s\n", fileLocation);
 		return;
 	}
 	glGenTextures(1, &textureID);
