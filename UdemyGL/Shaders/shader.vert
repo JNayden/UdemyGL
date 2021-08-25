@@ -2,9 +2,11 @@
 
 layout (location = 0) in vec3 pos;			
 layout (location = 1) in vec2 tex;
+layout (location = 2) in vec3 norm;
 
 out vec4 gCol;
 out vec2 TexCoord;
+out vec3 Normal;
 
 uniform mat4 model;							    
 uniform mat4 projection;											 
@@ -16,4 +18,7 @@ void main()
 	gCol = vec4(clamp(pos, 0.3f, 1.0f), 1.0f);
 
 	TexCoord = tex;
+	Normal = mat3(transpose(inverse(model))) * norm;
+	//we have to use mat3 bcs if we use mat4 the fourth column in matrix is for position, 
+	//but we dont want to make transform bcs we need only direction not actual point
 }
